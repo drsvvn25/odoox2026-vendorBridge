@@ -42,6 +42,9 @@ export default function App() {
   // Navigation States: 'landing' | 'login' | 'app'
   const [currentScreen, setCurrentScreen] = useState<'landing' | 'login' | 'app'>('landing');
   
+  // Custom user profile state
+  const [currentUser, setCurrentUser] = useState<{ name: string; email: string; company?: string } | null>(null);
+
   // Active Sidebar Nav Tab inside app
   const [activeTab, setActiveTab] = useState<'Dashboard' | 'Vendors' | 'RFQs' | 'Quotations' | 'Approvals' | 'Reports'>('Dashboard');
 
@@ -62,18 +65,30 @@ export default function App() {
     const savedApprovals = localStorage.getItem('erp_approvals');
     const savedRfqs = localStorage.getItem('erp_rfqs');
     const savedScreen = localStorage.getItem('erp_screen');
+    const savedUser = localStorage.getItem('erp_current_user');
 
     if (savedVendors) setVendors(JSON.parse(savedVendors));
     if (savedPurchaseOrders) setPurchaseOrders(JSON.parse(savedPurchaseOrders));
     if (savedApprovals) setApprovals(JSON.parse(savedApprovals));
     if (savedRfqs) setRfqs(JSON.parse(savedRfqs));
+    
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
+    } else {
+      setCurrentUser({
+        name: 'Alex Rivera',
+        email: 'alex.rivera@vendorbridge.com',
+        company: 'VendorBridge ERP'
+      });
+    }
+
     if (savedScreen) {
       const parsedScreen = savedScreen as 'landing' | 'login' | 'app';
       if (['landing', 'login', 'app'].includes(parsedScreen)) {
         setCurrentScreen(parsedScreen);
       }
     }
-  }, []);
+  }, [currentScreen]);
 
   // Save states helper definitions
   const saveVendors = (updatedVendors: Vendor[]) => {
@@ -163,6 +178,12 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('erp_current_user');
+    setCurrentUser({
+      name: 'Alex Rivera',
+      email: 'alex.rivera@vendorbridge.com',
+      company: 'VendorBridge ERP'
+    });
     navigateScreen('landing');
   };
 
@@ -276,14 +297,12 @@ export default function App() {
 
               {/* Senior lead detail block */}
               <div className="p-3 bg-surface-container-low border border-outline-variant rounded-xl flex items-center gap-3">
-                <img 
-                  alt="Senior Lead Avatar Rivera" 
-                  className="w-10 h-10 rounded-full border border-primary object-cover" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMUKfw_mj-dSEoNcCVFOz_dYpmgvgpPDNGX6W6DOuJOu3vsbeDFvuqFv7EwX9uXrZBrJxrsYqgHrS_Lbq-NOeZvTywTpWzccc4EuiCEuuICoVh0swsMJLTmHAOMoQEDHneR6s9J8lipSOBfmoZz3ca471NY-Jqx0PrvuRD4lB1W7BbgekpJktCFbbjNRXSermpdlv5kHW_KNFvsg6J_AqKZIvH44AzOecXJwxqU--m6wgjAgVOpr-Jcf81L2f1pdq4_00ytwRt0eit" 
-                />
+                <div className="w-10 h-10 rounded-full bg-indigo-600/10 border border-primary flex items-center justify-center font-sans font-bold text-sm text-primary flex-shrink-0">
+                  {currentUser?.name ? currentUser.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'AR'}
+                </div>
                 <div className="min-w-0">
-                  <span className="font-bold text-xs text-white block truncate leading-tight">Alex Rivera</span>
-                  <span className="text-[10px] text-on-surface-variant block truncate mt-0.5">Procurement Lead</span>
+                  <span className="font-bold text-xs text-white block truncate leading-tight">{currentUser?.name || 'Alex Rivera'}</span>
+                  <span className="text-[10px] text-on-surface-variant block truncate mt-0.5">{currentUser?.company || 'Procurement Lead'}</span>
                 </div>
               </div>
 
